@@ -1,4 +1,4 @@
-import type {ReactNativeBlobUtilNative, filedescriptor} from "types";
+import type {ReactNativeBlobUtilNative, filedescriptor} from "./types";
 import ReactNativeBlobUtil from "./codegenSpecs/NativeBlobUtils";
 
 function createMediafile(fd: filedescriptor, mediatype: string): Promise {
