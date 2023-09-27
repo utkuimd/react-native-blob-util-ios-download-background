@@ -34,7 +34,7 @@ public class ReactNativeBlobUtil extends NativeBlobUtilsSpec {
     }
 
     @ReactMethod
-    public void removeListeners(Integer count) {
+    public void removeListeners(double count) {
 
     }
 
