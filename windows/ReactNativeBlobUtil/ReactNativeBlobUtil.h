@@ -320,6 +320,19 @@ public:
 		std::string streamId,
 		std::function<void(std::string)> callback) noexcept;
 
+	// addListener
+	REACT_METHOD(addListener);
+	void addListener(
+		std::string eventName
+	) noexcept;
+
+	// removeListeners
+	REACT_METHOD(removeListeners);
+	void removeListeners(
+		double count
+	) noexcept;
+
+
 	// Helper methods
 private:
 	
