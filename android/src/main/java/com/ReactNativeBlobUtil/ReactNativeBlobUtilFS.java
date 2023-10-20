@@ -257,9 +257,9 @@ class ReactNativeBlobUtilFS {
             if (resolved != null && resolved.startsWith(ReactNativeBlobUtilConst.FILE_PREFIX_BUNDLE_ASSET)) {
                 String assetName = path.replace(ReactNativeBlobUtilConst.FILE_PREFIX_BUNDLE_ASSET, "");
                 // This fails should an asset file be >2GB
-                length = (int) ReactNativeBlobUtilImpl.RCTContext.getAssets().openFd(assetName).getLength();
-                bytes = new byte[length];
                 InputStream in = ReactNativeBlobUtilImpl.RCTContext.getAssets().open(assetName);
+                length = in.available();
+                bytes = new byte[length];
                 bytesRead = in.read(bytes, 0, length);
                 in.close();
             }
