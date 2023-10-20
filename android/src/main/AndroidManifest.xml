@@ -24,8 +24,7 @@
     <!-- Required to to download files without a notification-->
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION"/>
 
-    <application android:label="@string/app_name">
-
+    <application>
         <provider
             android:name="com.ReactNativeBlobUtil.Utils.FileProvider"
             android:authorities="${applicationId}.provider"
