@@ -1,4 +1,4 @@
- This workflow will publish a package to npm when a release is created.
+# This workflow will publish a package to npm when a release is created.
 # https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
 
 # TODO: add tests or leave them out, add build steps...?
