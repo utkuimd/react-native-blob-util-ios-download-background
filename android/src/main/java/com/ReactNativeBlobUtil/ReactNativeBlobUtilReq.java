@@ -929,9 +929,9 @@ public class ReactNativeBlobUtilReq extends BroadcastReceiver implements Runnabl
                 else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && options.addAndroidDownloads.hasKey("storeInDownloads") && options.addAndroidDownloads.getBoolean("storeInDownloads")){
                     Uri downloadeduri = dm.getUriForDownloadedFile(downloadManagerId);
                     if(downloadeduri == null)
-                        this.callback.invoke("Download manager could not resolve downloaded file uri.", ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, null);
+                        this.invoke_callback("Download manager could not resolve downloaded file uri.", ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, null);
                     else
-                        this.callback.invoke(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, downloadeduri.toString());
+                        this.invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, downloadeduri.toString());
                 }
                 else {
                     if (filePath == null)
