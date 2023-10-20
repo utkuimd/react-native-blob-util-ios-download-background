@@ -75,6 +75,10 @@ export interface Spec extends TurboModule {
     +getSDCardApplicationDir: () => Promise<string>;
     +scanFile: (pairs: Array<any>, callback: (value: Array<any>) => void) => void;
     +writeToMediaFile: (fileUri: string, path: string, transformFile: boolean) => Promise<string>;
+
+    // RCTEventEmitter
+    +addListener: (eventName: string) => void;
+    +removeListeners: (count: number) => void;
   }
 
   export default (TurboModuleRegistry.get<Spec>('ReactNativeBlobUtil'): ?Spec);
