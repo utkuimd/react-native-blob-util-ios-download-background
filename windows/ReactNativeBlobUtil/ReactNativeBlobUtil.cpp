@@ -1526,6 +1526,14 @@ void ReactNativeBlobUtil::splitPath(const std::wstring& fullPath, winrt::hstring
 	fileName = path.has_filename() ? winrt::to_hstring(path.filename().c_str()) : L"";
 }
 
+void ReactNativeBlobUtil::addListener(std::string eventName) noexcept
+{
+}
+
+void ReactNativeBlobUtil::removeListeners(double count) noexcept
+{
+}
+
 winrt::Windows::Foundation::IAsyncAction ReactNativeBlobUtil::ProcessRequestAsync(
 	const std::string& taskId,
 	const winrt::Windows::Web::Http::Filters::HttpBaseProtocolFilter& filter,
