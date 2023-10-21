@@ -69,8 +69,6 @@ public class ReactNativeBlobUtilStream {
             int cursor = 0;
             boolean error = false;
 
-            
-
             if (encoding.equalsIgnoreCase("utf8")) {
                 InputStreamReader isr = new InputStreamReader(fs, Charset.forName("UTF-8"));
                 BufferedReader reader = new BufferedReader(isr, chunkSize);
