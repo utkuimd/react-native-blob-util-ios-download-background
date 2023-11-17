@@ -47,6 +47,9 @@ android {
     def agpVersion = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
     if (agpVersion.tokenize('.')[0].toInteger() >= 7) {
         namespace "com.ReactNativeBlobUtil"
+        buildFeatures {
+            buildConfig true
+        }
     }
     compileSdkVersion safeExtGet('compileSdkVersion', 30)
     buildToolsVersion safeExtGet('buildToolsVersion', '28.0.3')
