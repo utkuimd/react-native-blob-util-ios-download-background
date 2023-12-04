@@ -163,7 +163,7 @@ export function fetch(...args: any): Promise {
     let taskId = getUUID();
     let options = this || {};
     let subscription, subscriptionUpload, stateEvent, partEvent;
-    let respInfo = {};
+    let respInfo = {'uninit': true};
     let [method, url, headers, body] = [...args];
 
     // # 241 normalize null or undefined headers, in case nil or null string
@@ -242,8 +242,9 @@ export function fetch(...args: any): Promise {
          *                  in JS context, and this parameter indicates which one
          *                  dose the response data presents.
          * @param data {string} Response data or its reference.
+         * @param responseInfo {Object.<>}
          */
-        req(options, taskId, method, url, headers || {}, body, (err, rawType, data) => {
+        req(options, taskId, method, url, headers || {}, body, (err, rawType, data, responseInfo) => {
 
             // task done, remove event listeners
             subscription.remove();
@@ -269,6 +270,8 @@ export function fetch(...args: any): Promise {
                         fs.session(options.session).add(data);
                 }
                 respInfo.rnfbEncode = rawType;
+                if (uninit in respInfo && respInfo.uninit) // event didn't fire yet so we override it here
+                    respInfo = responseInfo;
                 resolve(new FetchBlobResponse(taskId, respInfo, data));
             }
 

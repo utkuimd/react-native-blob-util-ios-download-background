@@ -638,6 +638,9 @@ public class ReactNativeBlobUtilReq extends BroadcastReceiver implements Runnabl
      */
     private void done(Response resp) {
         boolean isBlobResp = isBlobResponse(resp);
+        WritableMap respmap = getResponseInfo(resp,isBlobResp);
+        emitStateEvent(respmap.copy());
+
         emitStateEvent(getResponseInfo(resp, isBlobResp));
         switch (responseType) {
             case KeepInMemory:
@@ -656,7 +659,7 @@ public class ReactNativeBlobUtilReq extends BroadcastReceiver implements Runnabl
                         ins.close();
                         os.flush();
                         os.close();
-                        invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, dest);
+                        invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, dest, respmap.copy());
                     }
                     // response data directly pass to JS context as string.
                     else {
@@ -678,11 +681,11 @@ public class ReactNativeBlobUtilReq extends BroadcastReceiver implements Runnabl
                                 invoke_callback("Error from file transformer:" + e.getLocalizedMessage(), null);
                                 return;
                             }
-                            invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, this.destPath);
+                            invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, this.destPath, respmap.copy());
                             return;
                         }
                         if (responseFormat == ResponseFormat.BASE64) {
-                            invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_BASE64, android.util.Base64.encodeToString(b, Base64.NO_WRAP));
+                            invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_BASE64, android.util.Base64.encodeToString(b, Base64.NO_WRAP), respmap.copy());
                             return;
                         }
                         try {
@@ -699,9 +702,9 @@ public class ReactNativeBlobUtilReq extends BroadcastReceiver implements Runnabl
                         catch (CharacterCodingException ignored) {
                             if (responseFormat == ResponseFormat.UTF8) {
                                 String utf8 = new String(b);
-                                invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_UTF8, utf8);
+                                invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_UTF8, utf8, respmap.copy());
                             } else {
-                                invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_BASE64, android.util.Base64.encodeToString(b, Base64.NO_WRAP));
+                                invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_BASE64, android.util.Base64.encodeToString(b, Base64.NO_WRAP), respmap.copy());
                             }
                         }
                     }
@@ -746,16 +749,16 @@ public class ReactNativeBlobUtilReq extends BroadcastReceiver implements Runnabl
                 }
 
                 if (ReactNativeBlobUtilFileResp != null && !ReactNativeBlobUtilFileResp.isDownloadComplete()) {
-                    invoke_callback("Download interrupted.", null);
+                    invoke_callback("Download interrupted.", null, respmap.copy());
                 } else {
                     this.destPath = this.destPath.replace("?append=true", "");
-                    invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, this.destPath);
+                    invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, this.destPath, respmap.copy());
                 }
 
                 break;
             default:
                 try {
-                    invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_UTF8, new String(resp.body().bytes(), "UTF-8"));
+                    invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_UTF8, new String(resp.body().bytes(), "UTF-8"), respmap.copy());
                 } catch (IOException e) {
                     invoke_callback("ReactNativeBlobUtil failed to encode response data to UTF8 string.", null);
                 }

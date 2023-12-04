@@ -464,11 +464,16 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
         }
     }
 
+    NSHTTPURLResponse *response = (NSHTTPURLResponse *) [task response];
 
     callback(@[
                errMsg ?: [NSNull null],
                rnfbRespType ?: @"",
-               respStr ?: [NSNull null]
+               respStr ?: [NSNull null],
+                 @{
+                     @"status": [NSNumber numberWithInteger:[response statusCode]]
+                 }
+                ]);
                ]);
 
     respData = nil;
