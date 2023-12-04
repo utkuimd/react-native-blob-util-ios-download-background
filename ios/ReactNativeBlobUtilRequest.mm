@@ -473,8 +473,7 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
                  @{
                      @"status": [NSNumber numberWithInteger:[response statusCode]]
                  }
-                ]);
-               ]);
+             ]);
 
     respData = nil;
     receivedBytes = 0;
