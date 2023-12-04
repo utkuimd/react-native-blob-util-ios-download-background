@@ -270,7 +270,7 @@ export function fetch(...args: any): Promise {
                         fs.session(options.session).add(data);
                 }
                 respInfo.rnfbEncode = rawType;
-                if (uninit in respInfo && respInfo.uninit) // event didn't fire yet so we override it here
+                if ('uninit' in respInfo && respInfo.uninit) // event didn't fire yet so we override it here
                     respInfo = responseInfo;
                 resolve(new FetchBlobResponse(taskId, respInfo, data));
             }
