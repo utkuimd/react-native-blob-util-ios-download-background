@@ -260,6 +260,8 @@ export function fetch(...args: any): Promise {
             promise.cancel = () => {
             };
 
+            if(!responseInfo) responseInfo = {}; // should not be null / undefined
+
             if (err)
                 reject(new Error(err, respInfo));
             else {
@@ -269,9 +271,10 @@ export function fetch(...args: any): Promise {
                     if (options.session)
                         fs.session(options.session).add(data);
                 }
-                respInfo.rnfbEncode = rawType;
                 if ('uninit' in respInfo && respInfo.uninit) // event didn't fire yet so we override it here
                     respInfo = responseInfo;
+
+                respInfo.rnfbEncode = rawType;
                 resolve(new FetchBlobResponse(taskId, respInfo, data));
             }
 

@@ -678,7 +678,7 @@ public class ReactNativeBlobUtilReq extends BroadcastReceiver implements Runnabl
                             try (FileOutputStream fos = new FileOutputStream(file)) {
                                 fos.write(ReactNativeBlobUtilFileTransformer.sharedFileTransformer.onWriteFile(b));
                             } catch (Exception e) {
-                                invoke_callback("Error from file transformer:" + e.getLocalizedMessage(), null);
+                                invoke_callback("Error from file transformer:" + e.getLocalizedMessage(),  respmap.copy());
                                 return;
                             }
                             invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, this.destPath, respmap.copy());
@@ -709,7 +709,7 @@ public class ReactNativeBlobUtilReq extends BroadcastReceiver implements Runnabl
                         }
                     }
                 } catch (IOException e) {
-                    invoke_callback("ReactNativeBlobUtil failed to encode response data to BASE64 string.", null);
+                    invoke_callback("ReactNativeBlobUtil failed to encode response data to BASE64 string.", respmap.copy());
                 }
                 break;
             case FileStorage:
@@ -741,15 +741,15 @@ public class ReactNativeBlobUtilReq extends BroadcastReceiver implements Runnabl
                         } catch (IOException exception) {
                             exception.printStackTrace();
                         }
-                        invoke_callback("Unexpected FileStorage response file: " + responseBodyString, null);
+                        invoke_callback("Unexpected FileStorage response file: " + responseBodyString,  respmap.copy());
                     } else {
-                        invoke_callback("Unexpected FileStorage response with no file.", null);
+                        invoke_callback("Unexpected FileStorage response with no file.",  respmap.copy());
                     }
                     return;
                 }
 
                 if (ReactNativeBlobUtilFileResp != null && !ReactNativeBlobUtilFileResp.isDownloadComplete()) {
-                    invoke_callback("Download interrupted.", null, respmap.copy());
+                    invoke_callback("Download interrupted.", respmap.copy());
                 } else {
                     this.destPath = this.destPath.replace("?append=true", "");
                     invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_PATH, this.destPath, respmap.copy());
@@ -760,7 +760,7 @@ public class ReactNativeBlobUtilReq extends BroadcastReceiver implements Runnabl
                 try {
                     invoke_callback(null, ReactNativeBlobUtilConst.RNFB_RESPONSE_UTF8, new String(resp.body().bytes(), "UTF-8"), respmap.copy());
                 } catch (IOException e) {
-                    invoke_callback("ReactNativeBlobUtil failed to encode response data to UTF8 string.", null);
+                    invoke_callback("ReactNativeBlobUtil failed to encode response data to UTF8 string.", respmap.copy());
                 }
                 break;
         }
