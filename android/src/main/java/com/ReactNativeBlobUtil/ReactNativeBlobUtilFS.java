@@ -680,37 +680,36 @@ class ReactNativeBlobUtilFS {
      */
     static void slice(String path, String dest, int start, int end, String encode, Promise promise) {
         try {
-            path = ReactNativeBlobUtilUtils.normalizePath(path);
             dest = ReactNativeBlobUtilUtils.normalizePath(dest);
-            File source = new File(path);
-            if (source.isDirectory()) {
-                promise.reject("EISDIR", "Expecting a file but '" + path + "' is a directory");
-                return;
+
+            if (!path.startsWith(ReactNativeBlobUtilConst.FILE_PREFIX_CONTENT)) {
+                File file = new File(ReactNativeBlobUtilUtils.normalizePath(path));
+                if (file.isDirectory()) {
+                    promise.reject("EISDIR", "Expecting a file but '" + path + "' is a directory");
+                    return;
+                }
             }
-            if (!source.exists()) {
+
+            InputStream in = inputStreamFromPath(path);
+            if (in == null) {
                 promise.reject("ENOENT", "No such file '" + path + "'");
                 return;
             }
-            int size = (int) source.length();
-            int max = Math.min(size, end);
-            int expected = max - start;
-            int now = 0;
-            FileInputStream in = new FileInputStream(new File(path));
             FileOutputStream out = new FileOutputStream(new File(dest));
             int skipped = (int) in.skip(start);
             if (skipped != start) {
-                promise.reject("EUNSPECIFIED", "Skipped " + skipped + " instead of the specified " + start + " bytes, size is " + size);
+                promise.reject("EUNSPECIFIED", "Skipped " + skipped + " instead of the specified " + start + " bytes");
                 return;
             }
             byte[] buffer = new byte[10240];
-            while (now < expected) {
+            int remain = end - start;
+            while (remain > 0) {
                 int read = in.read(buffer, 0, 10240);
-                int remain = expected - now;
                 if (read <= 0) {
                     break;
                 }
                 out.write(buffer, 0, (int) Math.min(remain, read));
-                now += read;
+                remain -= read;
             }
             in.close();
             out.flush();
