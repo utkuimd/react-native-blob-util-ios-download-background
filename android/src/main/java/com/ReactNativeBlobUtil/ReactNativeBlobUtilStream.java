@@ -274,20 +274,4 @@ public class ReactNativeBlobUtilStream {
         eventData.putString("streamId", streamName);
         this.emitter.emit(EVENT_FILESYSTEM, eventData);
     }
-
-    /**
-     * Get input stream of the given path, when the path is a string starts with bundle-assets://
-     * the stream is created by Assets Manager, otherwise use FileInputStream.
-     *
-     * @param path The file to open stream
-     * @return InputStream instance
-     * @throws IOException If the given file does not exist or is a directory FileInputStream will throw a FileNotFoundException
-     */
-    public static InputStream inputStreamFromPath(String path) throws IOException {
-        if (path.startsWith(ReactNativeBlobUtilConst.FILE_PREFIX_BUNDLE_ASSET)) {
-            return ReactNativeBlobUtilImpl.RCTContext.getAssets().open(path.replace(ReactNativeBlobUtilConst.FILE_PREFIX_BUNDLE_ASSET, ""));
-        }
-        return new FileInputStream(new File(path));
-    }
-
 }
