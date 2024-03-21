@@ -846,31 +846,27 @@ class ReactNativeBlobUtilFS {
                 return;
             }
 
-            path = ReactNativeBlobUtilUtils.normalizePath(path);
-
-            File file = new File(path);
-
-            if (file.isDirectory()) {
-                promise.reject("EISDIR", "Expecting a file but '" + path + "' is a directory");
-                return;
-            }
-
-            if (!file.exists()) {
-                promise.reject("ENOENT", "No such file '" + path + "'");
-                return;
+            if (!path.startsWith(ReactNativeBlobUtilConst.FILE_PREFIX_CONTENT)) {
+                File file = new File(ReactNativeBlobUtilUtils.normalizePath(path));
+                if (file.isDirectory()) {
+                    promise.reject("EISDIR", "Expecting a file but '" + path + "' is a directory");
+                    return;
+                }
             }
 
             MessageDigest md = MessageDigest.getInstance(algorithms.get(algorithm));
 
-            FileInputStream inputStream = new FileInputStream(path);
+            InputStream inputStream = inputStreamFromPath(path);
+            if (inputStream == null) {
+                promise.reject("ENOENT", "No such file '" + path + "'");
+                return;
+            }
             int chunkSize = 4096 * 256; // 1Mb
             byte[] buffer = new byte[chunkSize];
 
-            if (file.length() != 0) {
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    md.update(buffer, 0, bytesRead);
-                }
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                md.update(buffer, 0, bytesRead);
             }
 
             StringBuilder hexString = new StringBuilder();
