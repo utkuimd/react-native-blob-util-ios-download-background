@@ -519,15 +519,15 @@ class ReactNativeBlobUtilFS {
      * @param callback JS context callback
      */
     static void cp(String path, String dest, Callback callback) {
-        path = ReactNativeBlobUtilUtils.normalizePath(path);
         dest = ReactNativeBlobUtilUtils.normalizePath(dest);
         InputStream in = null;
         OutputStream out = null;
         String message = "";
 
         try {
-            if (!isPathExists(path)) {
-                callback.invoke("Source file at path`" + path + "` does not exist");
+            in = inputStreamFromPath(path);
+            if (in == null) {
+                callback.invoke("Source file at path`" + path + "` does not exist or can not be opened");
                 return;
             }
             if (!new File(dest).exists()) {
@@ -538,7 +538,6 @@ class ReactNativeBlobUtilFS {
                 }
             }
 
-            in = inputStreamFromPath(path);
             out = new FileOutputStream(dest);
 
             byte[] buf = new byte[10240];
@@ -1018,8 +1017,10 @@ class ReactNativeBlobUtilFS {
     }
 
     /**
-     * Get input stream of the given path, when the path is a string starts with bundle-assets://
-     * the stream is created by Assets Manager, otherwise use FileInputStream.
+     * Get input stream of the given path.
+     * When the path starts with bundle-assets:// the stream is created by Assets Manager
+     * When the path starts with content:// the stream is created by ContentResolver
+     * otherwise use FileInputStream.
      *
      * @param path The file to open stream
      * @return InputStream instance
@@ -1029,7 +1030,10 @@ class ReactNativeBlobUtilFS {
         if (path.startsWith(ReactNativeBlobUtilConst.FILE_PREFIX_BUNDLE_ASSET)) {
             return ReactNativeBlobUtilImpl.RCTContext.getAssets().open(path.replace(ReactNativeBlobUtilConst.FILE_PREFIX_BUNDLE_ASSET, ""));
         }
-        return new FileInputStream(new File(path));
+        if (path.startsWith(ReactNativeBlobUtilConst.FILE_PREFIX_CONTENT)) {
+            return ReactNativeBlobUtilImpl.RCTContext.getContentResolver().openInputStream(Uri.parse(path));
+        }
+        return new FileInputStream(new File(ReactNativeBlobUtilUtils.normalizePath(path)));
     }
 
     /**
