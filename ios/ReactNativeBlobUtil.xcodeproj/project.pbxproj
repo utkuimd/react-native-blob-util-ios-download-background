@@ -53,6 +53,7 @@
 		A15C30111CD25C330074CB35 /* ReactNativeBlobUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ReactNativeBlobUtil.h; path = ReactNativeBlobUtil/ReactNativeBlobUtil.h; sourceTree = "<group>"; };
 		A19B48231D98100800E6868A /* ReactNativeBlobUtilProgress.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReactNativeBlobUtilProgress.h; sourceTree = "<group>"; };
 		A1AAE2971D300E3E0051D11C /* ReactNativeBlobUtilReqBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReactNativeBlobUtilReqBuilder.h; sourceTree = "<group>"; };
+		CBE41E482BB345A0004922E9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E83F89B1EFF498D9833537A4 /* Pods-ReactNativeBlobUtil.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ReactNativeBlobUtil.debug.xcconfig"; path = "Target Support Files/Pods-ReactNativeBlobUtil/Pods-ReactNativeBlobUtil.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -87,6 +88,7 @@
 		A15C30051CD25C330074CB35 = {
 			isa = PBXGroup;
 			children = (
+				CBE41E482BB345A0004922E9 /* PrivacyInfo.xcprivacy */,
 				11A307F22A06E47400E56674 /* ReactNativeBlobUtil */,
 				11A307F42A06E47500E56674 /* ReactNativeBlobUtilConst.mm */,
 				11A307F32A06E47400E56674 /* ReactNativeBlobUtilFileTransformer.mm */,
