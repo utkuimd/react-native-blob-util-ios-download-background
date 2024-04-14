@@ -148,11 +148,15 @@ public class ReactNativeBlobUtilStream {
      * @param callback Callback
      */
     void writeStream(String path, String encoding, boolean append, Callback callback) {
+        String resolved = ReactNativeBlobUtilUtils.normalizePath(path);
+        if (resolved != null)
+            path = resolved;
+
         try {
             File dest = new File(path);
             File dir = dest.getParentFile();
 
-            if (!dest.exists()) {
+            if (resolved != null && !dest.exists()) {
                 if (dir != null && !dir.exists()) {
                     if (!dir.mkdirs()) {
                         callback.invoke("ENOTDIR", "Failed to create parent directory of '" + path + "'");
@@ -168,7 +172,16 @@ public class ReactNativeBlobUtilStream {
                 return;
             }
 
-            OutputStream fs = new FileOutputStream(path, append);
+            OutputStream fs;
+            if (resolved != null && path.startsWith(ReactNativeBlobUtilConst.FILE_PREFIX_BUNDLE_ASSET)) {
+                fs = ReactNativeBlobUtilImpl.RCTContext.getAssets().openFd(path.replace(ReactNativeBlobUtilConst.FILE_PREFIX_BUNDLE_ASSET, "")).createOutputStream ();
+            }
+            // fix issue 287
+            else if (resolved == null) {
+                fs = ReactNativeBlobUtilImpl.RCTContext.getContentResolver().openOutputStream(Uri.parse(path));
+            } else {
+                fs = new FileOutputStream(path, append);
+            }
             this.encoding = encoding;
             String streamId = UUID.randomUUID().toString();
             ReactNativeBlobUtilStream.fileStreams.put(streamId, this);
