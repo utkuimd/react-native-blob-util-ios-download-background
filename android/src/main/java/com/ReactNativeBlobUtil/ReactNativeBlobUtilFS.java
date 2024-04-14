@@ -519,15 +519,15 @@ class ReactNativeBlobUtilFS {
      * @param callback JS context callback
      */
     static void cp(String path, String dest, Callback callback) {
-        path = ReactNativeBlobUtilUtils.normalizePath(path);
         dest = ReactNativeBlobUtilUtils.normalizePath(dest);
         InputStream in = null;
         OutputStream out = null;
         String message = "";
 
         try {
-            if (!isPathExists(path)) {
-                callback.invoke("Source file at path`" + path + "` does not exist");
+            in = inputStreamFromPath(path);
+            if (in == null) {
+                callback.invoke("Source file at path`" + path + "` does not exist or can not be opened");
                 return;
             }
             if (!new File(dest).exists()) {
@@ -538,7 +538,6 @@ class ReactNativeBlobUtilFS {
                 }
             }
 
-            in = inputStreamFromPath(path);
             out = new FileOutputStream(dest);
 
             byte[] buf = new byte[10240];
@@ -681,37 +680,36 @@ class ReactNativeBlobUtilFS {
      */
     static void slice(String path, String dest, int start, int end, String encode, Promise promise) {
         try {
-            path = ReactNativeBlobUtilUtils.normalizePath(path);
             dest = ReactNativeBlobUtilUtils.normalizePath(dest);
-            File source = new File(path);
-            if (source.isDirectory()) {
-                promise.reject("EISDIR", "Expecting a file but '" + path + "' is a directory");
-                return;
+
+            if (!path.startsWith(ReactNativeBlobUtilConst.FILE_PREFIX_CONTENT)) {
+                File file = new File(ReactNativeBlobUtilUtils.normalizePath(path));
+                if (file.isDirectory()) {
+                    promise.reject("EISDIR", "Expecting a file but '" + path + "' is a directory");
+                    return;
+                }
             }
-            if (!source.exists()) {
+
+            InputStream in = inputStreamFromPath(path);
+            if (in == null) {
                 promise.reject("ENOENT", "No such file '" + path + "'");
                 return;
             }
-            int size = (int) source.length();
-            int max = Math.min(size, end);
-            int expected = max - start;
-            int now = 0;
-            FileInputStream in = new FileInputStream(new File(path));
             FileOutputStream out = new FileOutputStream(new File(dest));
             int skipped = (int) in.skip(start);
             if (skipped != start) {
-                promise.reject("EUNSPECIFIED", "Skipped " + skipped + " instead of the specified " + start + " bytes, size is " + size);
+                promise.reject("EUNSPECIFIED", "Skipped " + skipped + " instead of the specified " + start + " bytes");
                 return;
             }
             byte[] buffer = new byte[10240];
-            while (now < expected) {
+            int remain = end - start;
+            while (remain > 0) {
                 int read = in.read(buffer, 0, 10240);
-                int remain = expected - now;
                 if (read <= 0) {
                     break;
                 }
                 out.write(buffer, 0, (int) Math.min(remain, read));
-                now += read;
+                remain -= read;
             }
             in.close();
             out.flush();
@@ -847,31 +845,27 @@ class ReactNativeBlobUtilFS {
                 return;
             }
 
-            path = ReactNativeBlobUtilUtils.normalizePath(path);
-
-            File file = new File(path);
-
-            if (file.isDirectory()) {
-                promise.reject("EISDIR", "Expecting a file but '" + path + "' is a directory");
-                return;
-            }
-
-            if (!file.exists()) {
-                promise.reject("ENOENT", "No such file '" + path + "'");
-                return;
+            if (!path.startsWith(ReactNativeBlobUtilConst.FILE_PREFIX_CONTENT)) {
+                File file = new File(ReactNativeBlobUtilUtils.normalizePath(path));
+                if (file.isDirectory()) {
+                    promise.reject("EISDIR", "Expecting a file but '" + path + "' is a directory");
+                    return;
+                }
             }
 
             MessageDigest md = MessageDigest.getInstance(algorithms.get(algorithm));
 
-            FileInputStream inputStream = new FileInputStream(path);
+            InputStream inputStream = inputStreamFromPath(path);
+            if (inputStream == null) {
+                promise.reject("ENOENT", "No such file '" + path + "'");
+                return;
+            }
             int chunkSize = 4096 * 256; // 1Mb
             byte[] buffer = new byte[chunkSize];
 
-            if (file.length() != 0) {
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    md.update(buffer, 0, bytesRead);
-                }
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                md.update(buffer, 0, bytesRead);
             }
 
             StringBuilder hexString = new StringBuilder();
@@ -1018,8 +1012,10 @@ class ReactNativeBlobUtilFS {
     }
 
     /**
-     * Get input stream of the given path, when the path is a string starts with bundle-assets://
-     * the stream is created by Assets Manager, otherwise use FileInputStream.
+     * Get input stream of the given path.
+     * When the path starts with bundle-assets:// the stream is created by Assets Manager
+     * When the path starts with content:// the stream is created by ContentResolver
+     * otherwise use FileInputStream.
      *
      * @param path The file to open stream
      * @return InputStream instance
@@ -1029,7 +1025,10 @@ class ReactNativeBlobUtilFS {
         if (path.startsWith(ReactNativeBlobUtilConst.FILE_PREFIX_BUNDLE_ASSET)) {
             return ReactNativeBlobUtilImpl.RCTContext.getAssets().open(path.replace(ReactNativeBlobUtilConst.FILE_PREFIX_BUNDLE_ASSET, ""));
         }
-        return new FileInputStream(new File(path));
+        if (path.startsWith(ReactNativeBlobUtilConst.FILE_PREFIX_CONTENT)) {
+            return ReactNativeBlobUtilImpl.RCTContext.getContentResolver().openInputStream(Uri.parse(path));
+        }
+        return new FileInputStream(new File(ReactNativeBlobUtilUtils.normalizePath(path)));
     }
 
     /**
