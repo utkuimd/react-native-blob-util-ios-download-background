@@ -54,6 +54,7 @@ android/.idea/scopes/scope_settings.xml
 android/.idea/vcs.xml
 android/*.iml
 android/.settings
+android/proguard-rules.pro
 
 # iOS
 ios/*.xcodeproj/xcuserdata
