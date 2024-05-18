@@ -194,6 +194,52 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
 
 #pragma mark NSURLSession delegate methods
 
+- (void)configureWriteStream {
+    if (respFile)
+    {
+        @try{
+            NSFileManager * fm = [NSFileManager defaultManager];
+            NSString * folder = [destPath stringByDeletingLastPathComponent];
+
+            if (![fm fileExistsAtPath:folder]) {
+                [fm createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:NULL error:nil];
+            }
+
+            // if not set overwrite in options, defaults to TRUE
+            BOOL overwrite = [options valueForKey:@"overwrite"] == nil ? YES : [[options valueForKey:@"overwrite"] boolValue];
+            BOOL appendToExistingFile = [destPath containsString:@"?append=true"];
+
+            appendToExistingFile = !overwrite;
+
+            // For solving #141 append response data if the file already exists
+            // base on PR#139 @kejinliang
+            if (appendToExistingFile) {
+                destPath = [destPath stringByReplacingOccurrencesOfString:@"?append=true" withString:@""];
+            }
+
+            if (![fm fileExistsAtPath:destPath]) {
+                [fm createFileAtPath:destPath contents:[[NSData alloc] init] attributes:nil];
+            }
+
+            writeStream = [[NSOutputStream alloc] initToFileAtPath:destPath append:appendToExistingFile];
+            [writeStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+            [writeStream open];
+        }
+        @catch(NSException * ex)
+        {
+            NSLog(@"write file error");
+        }
+    }
+}
+
+- (void)processData:(NSData *)data {
+    if (respFile && ![self ShouldTransformFile]) {
+        [writeStream write:(const uint8_t *)[data bytes] maxLength:[data length]];
+    } else {
+        [respData appendData:data];
+    }
+}
+
 
 #pragma mark - Received Response
 // set expected content length on response received
@@ -284,41 +330,7 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
         NSLog(@"oops");
     }
 
-    if (respFile)
-    {
-        @try{
-            NSFileManager * fm = [NSFileManager defaultManager];
-            NSString * folder = [destPath stringByDeletingLastPathComponent];
-
-            if (![fm fileExistsAtPath:folder]) {
-                [fm createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:NULL error:nil];
-            }
-
-            // if not set overwrite in options, defaults to TRUE
-            BOOL overwrite = [options valueForKey:@"overwrite"] == nil ? YES : [[options valueForKey:@"overwrite"] boolValue];
-            BOOL appendToExistingFile = [destPath containsString:@"?append=true"];
-
-            appendToExistingFile = !overwrite;
-
-            // For solving #141 append response data if the file already exists
-            // base on PR#139 @kejinliang
-            if (appendToExistingFile) {
-                destPath = [destPath stringByReplacingOccurrencesOfString:@"?append=true" withString:@""];
-            }
-
-            if (![fm fileExistsAtPath:destPath]) {
-                [fm createFileAtPath:destPath contents:[[NSData alloc] init] attributes:nil];
-            }
-
-            writeStream = [[NSOutputStream alloc] initToFileAtPath:destPath append:appendToExistingFile];
-            [writeStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-            [writeStream open];
-        }
-        @catch(NSException * ex)
-        {
-            NSLog(@"write file error");
-        }
-    }
+    [self configureWriteStream];
 
     completionHandler(NSURLSessionResponseAllow);
 }
@@ -345,11 +357,7 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
 
     // If we need to process the data, we defer writing into the file until the we have all the data, at which point
     // we can perform the processing and then write into the file
-    if (respFile && ![self ShouldTransformFile]) {
-        [writeStream write:(const uint8_t *)[data bytes] maxLength:[data length]];
-    } else {
-        [respData appendData:data];
-    }
+    [self processData:data];
 
     if (expectedBytes == 0) {
         return;
@@ -545,6 +553,17 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
 
 #pragma mark NSURLSessionDownloadTask delegate methods
 
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location {
+
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSData *data = [fm contentsAtPath:location.path];
+
+    [self configureWriteStream];
+
+    [self processData:data];
+
+}
+
 - (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
     if (totalBytesExpectedToWrite == 0) {
         return;
@@ -562,6 +581,5 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
          ];
     }
 }
-
 
 @end

@@ -20,7 +20,7 @@
 #import "RCTBridgeModule.h"
 #endif
 
-@interface ReactNativeBlobUtilRequest : NSObject <NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate>
+@interface ReactNativeBlobUtilRequest : NSObject <NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate, NSURLSessionDownloadDelegate>
 
 @property (nullable, nonatomic) NSString * taskId;
 @property (nonatomic) long long expectedBytes;
