@@ -571,8 +571,7 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
 
     NSNumber * now =[NSNumber numberWithFloat:((float)totalBytesWritten/(float)totalBytesExpectedToWrite)];
     if ([self.progressConfig shouldReport:now]) {
-        [self.bridge.eventDispatcher
-         sendDeviceEventWithName:EVENT_PROGRESS
+        [self.baseModule emitEventDict:EVENT_PROGRESS
          body:@{
                 @"taskId": taskId,
                 @"written": [NSString stringWithFormat:@"%lld", (long long) totalBytesWritten],
