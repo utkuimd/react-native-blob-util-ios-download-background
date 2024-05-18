@@ -541,5 +541,27 @@ typedef NS_ENUM(NSUInteger, ResponseFormat) {
     }
 }
 
+// NSURLSessionDownloadTask delegates
+
+#pragma mark NSURLSessionDownloadTask delegate methods
+
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite {
+    if (totalBytesExpectedToWrite == 0) {
+        return;
+    }
+
+    NSNumber * now =[NSNumber numberWithFloat:((float)totalBytesWritten/(float)totalBytesExpectedToWrite)];
+    if ([self.progressConfig shouldReport:now]) {
+        [self.bridge.eventDispatcher
+         sendDeviceEventWithName:EVENT_PROGRESS
+         body:@{
+                @"taskId": taskId,
+                @"written": [NSString stringWithFormat:@"%lld", (long long) totalBytesWritten],
+                @"total": [NSString stringWithFormat:@"%lld", (long long) totalBytesExpectedToWrite]
+                }
+         ];
+    }
+}
+
 
 @end
