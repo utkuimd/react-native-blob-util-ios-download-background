@@ -4,7 +4,7 @@
 
 A project committed to making file access and data transfer easier and more efficient for React Native developers.
 
-# I forked this project to continue working on it.
+# I forked this project to continue working on it
 
 This project is a fork of https://www.npmjs.com/package/rn-fetch-blob which on the other hand is a fork of https://github.com/wkh237/react-native-fetch-blob. Both the original repository and its first fork are not maintained anymore.
 
